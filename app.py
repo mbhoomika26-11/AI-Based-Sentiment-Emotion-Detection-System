@@ -8,15 +8,43 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
-# Fix NLTK issue
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(page_title="Sentiment Analyzer", page_icon="🧠", layout="wide")
+
+# ---------------- CUSTOM CSS ----------------
+st.markdown("""
+<style>
+.main {
+    background-color: #0E1117;
+}
+h1 {
+    text-align: center;
+    color: #FFFFFF;
+}
+.result-box {
+    padding: 20px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #1f4037, #99f2c8);
+    color: black;
+    font-size: 20px;
+    font-weight: bold;
+}
+textarea {
+    border-radius: 10px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------- TITLE ----------------
+st.markdown("<h1>🧠 Sentiment & Emotion Analyzer</h1>", unsafe_allow_html=True)
+
+# ---------------- NLTK FIX ----------------
 try:
     nltk.data.find('corpora/stopwords')
 except:
     nltk.download('stopwords')
 
-st.title("🧠 Sentiment & Emotion Analyzer")
-
-# Load data
+# ---------------- LOAD DATA ----------------
 @st.cache_data
 def load_data():
     train_df = pd.read_csv("training.csv")
@@ -25,14 +53,14 @@ def load_data():
 
 train_df, val_df = load_data()
 
-# Mapping
+# ---------------- MAPPING ----------------
 mapping = {
-    0: "sadness",
-    1: "joy",
-    2: "love",
-    3: "anger",
-    4: "fear",
-    5: "surprise"
+    0: "😢 sadness",
+    1: "😄 joy",
+    2: "❤️ love",
+    3: "😡 anger",
+    4: "😨 fear",
+    5: "😲 surprise"
 }
 
 def emotion_to_sentiment(emotion):
@@ -46,10 +74,10 @@ def emotion_to_sentiment(emotion):
 train_df["emotion_name"] = train_df["label"].map(mapping)
 val_df["emotion_name"] = val_df["label"].map(mapping)
 
-train_df["sentiment"] = train_df["emotion_name"].apply(emotion_to_sentiment)
-val_df["sentiment"] = val_df["emotion_name"].apply(emotion_to_sentiment)
+train_df["sentiment"] = train_df["emotion_name"].apply(lambda x: emotion_to_sentiment(x.split()[1]))
+val_df["sentiment"] = val_df["emotion_name"].apply(lambda x: emotion_to_sentiment(x.split()[1]))
 
-# Text cleaning
+# ---------------- TEXT CLEANING ----------------
 stop_words = set(stopwords.words('english'))
 
 def clean_text(text):
@@ -62,7 +90,7 @@ def clean_text(text):
 train_df["clean_text"] = train_df["text"].apply(clean_text)
 val_df["clean_text"] = val_df["text"].apply(clean_text)
 
-# Train model
+# ---------------- MODEL ----------------
 @st.cache_resource
 def train_model():
     tfidf = TfidfVectorizer(max_features=5000, ngram_range=(1,2))
@@ -78,22 +106,39 @@ def train_model():
 
 tfidf, emotion_model, sentiment_model = train_model()
 
-# User input
-user_input = st.text_area("Enter your text")
+# ---------------- INPUT SECTION ----------------
+st.subheader("💬 Enter your text")
+user_input = st.text_area("Type something...", height=150)
 
-if st.button("Analyze"):
+# ---------------- BUTTON ----------------
+if st.button("🚀 Analyze"):
     clean = clean_text(user_input)
     vec = tfidf.transform([clean])
 
     emotion_pred = emotion_model.predict(vec)[0]
     sentiment_pred = sentiment_model.predict(vec)[0]
 
-    st.subheader("Result")
-    st.write("Emotion:", mapping[emotion_pred])
-    st.write("Sentiment:", sentiment_pred)
+    emotion_name = mapping[emotion_pred]
 
-# Charts
-st.subheader("Emotion Distribution")
-fig, ax = plt.subplots()
-train_df["label"].value_counts().plot(kind="bar", ax=ax)
-st.pyplot(fig)
+    # ---------------- RESULT DISPLAY ----------------
+    st.markdown(f"""
+    <div class="result-box">
+        🎯 Emotion: {emotion_name} <br><br>
+        📊 Sentiment: {sentiment_pred.upper()}
+    </div>
+    """, unsafe_allow_html=True)
+
+# ---------------- CHARTS ----------------
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("📊 Emotion Distribution")
+    fig, ax = plt.subplots()
+    train_df["label"].value_counts().plot(kind="bar", ax=ax)
+    st.pyplot(fig)
+
+with col2:
+    st.subheader("📊 Sentiment Distribution")
+    fig2, ax2 = plt.subplots()
+    train_df["sentiment"].value_counts().plot(kind="bar", ax=ax2)
+    st.pyplot(fig2)
