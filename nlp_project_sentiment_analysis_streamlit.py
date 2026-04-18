@@ -8,20 +8,24 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
-nltk.download('stopwords')
+# Fix NLTK issue
+try:
+    nltk.data.find('corpora/stopwords')
+except:
+    nltk.download('stopwords')
 
 st.title("🧠 Sentiment & Emotion Analyzer")
 
-# ---------------- LOAD DATA ----------------
+# Load data
 @st.cache_data
 def load_data():
     train_df = pd.read_csv("training.csv")
-    val_df   = pd.read_csv("validation.csv")
+    val_df = pd.read_csv("validation.csv")
     return train_df, val_df
 
 train_df, val_df = load_data()
 
-# ---------------- MAPPING ----------------
+# Mapping
 mapping = {
     0: "sadness",
     1: "joy",
@@ -40,12 +44,12 @@ def emotion_to_sentiment(emotion):
         return "neutral"
 
 train_df["emotion_name"] = train_df["label"].map(mapping)
-val_df["emotion_name"]   = val_df["label"].map(mapping)
+val_df["emotion_name"] = val_df["label"].map(mapping)
 
 train_df["sentiment"] = train_df["emotion_name"].apply(emotion_to_sentiment)
-val_df["sentiment"]   = val_df["emotion_name"].apply(emotion_to_sentiment)
+val_df["sentiment"] = val_df["emotion_name"].apply(emotion_to_sentiment)
 
-# ---------------- CLEAN TEXT ----------------
+# Text cleaning
 stop_words = set(stopwords.words('english'))
 
 def clean_text(text):
@@ -56,9 +60,9 @@ def clean_text(text):
     return " ".join(words)
 
 train_df["clean_text"] = train_df["text"].apply(clean_text)
-val_df["clean_text"]   = val_df["text"].apply(clean_text)
+val_df["clean_text"] = val_df["text"].apply(clean_text)
 
-# ---------------- MODEL ----------------
+# Train model
 @st.cache_resource
 def train_model():
     tfidf = TfidfVectorizer(max_features=5000, ngram_range=(1,2))
@@ -74,8 +78,8 @@ def train_model():
 
 tfidf, emotion_model, sentiment_model = train_model()
 
-# ---------------- UI INPUT ----------------
-user_input = st.text_area("Enter your text:")
+# User input
+user_input = st.text_area("Enter your text")
 
 if st.button("Analyze"):
     clean = clean_text(user_input)
@@ -84,21 +88,12 @@ if st.button("Analyze"):
     emotion_pred = emotion_model.predict(vec)[0]
     sentiment_pred = sentiment_model.predict(vec)[0]
 
-    emotion_name = mapping[emotion_pred]
+    st.subheader("Result")
+    st.write("Emotion:", mapping[emotion_pred])
+    st.write("Sentiment:", sentiment_pred)
 
-    st.subheader("🔍 Result")
-    st.write("**Emotion:**", emotion_name)
-    st.write("**Sentiment:**", sentiment_pred)
-
-# ---------------- VISUALIZATION ----------------
-st.subheader("📊 Emotion Distribution")
-
+# Charts
+st.subheader("Emotion Distribution")
 fig, ax = plt.subplots()
-train_df["emotion_name"].value_counts().plot(kind='bar', ax=ax)
+train_df["label"].value_counts().plot(kind="bar", ax=ax)
 st.pyplot(fig)
-
-st.subheader("📊 Sentiment Distribution")
-
-fig2, ax2 = plt.subplots()
-train_df["sentiment"].value_counts().plot(kind='bar', ax=ax2)
-st.pyplot(fig2)
