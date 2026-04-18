@@ -9,29 +9,63 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
 # ---------------- PAGE CONFIG ----------------
-st.set_page_config(
-    page_title="Sentiment Analyzer",
-    page_icon="🧠",
-    layout="wide"
-)
+st.set_page_config(page_title="Sentiment Analyzer", page_icon="🧠", layout="wide")
 
-# ---------------- LIGHT THEME CSS ----------------
+# ---------------- LAVENDER THEME CSS ----------------
 st.markdown("""
 <style>
-body {
-    background-color: #f5f7fa;
-}
-.main {
-    background-color: #f5f7fa;
+
+/* Background */
+.stApp {
+    background: linear-gradient(135deg, #E6E6FA, #F8F0FF);
 }
 
 /* Title */
 h1 {
     text-align: center;
-    color: #2c3e50;
+    color: #4B0082;
+    font-weight: 700;
 }
 
-/* Card Style */
+/* Subheaders */
+h2, h3 {
+    color: #5D3FD3;
+}
+
+/* Input Box */
+textarea {
+    border-radius: 12px !important;
+    border: 1px solid #C8A2C8 !important;
+    background-color: #FFFFFF !important;
+}
+
+/* Button */
+.stButton > button {
+    background: linear-gradient(135deg, #B57EDC, #9370DB);
+    color: white;
+    border-radius: 10px;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    transition: 0.3s;
+}
+.stButton > button:hover {
+    background: linear-gradient(135deg, #9370DB, #7B68EE);
+}
+
+/* Result Card */
+.result-box {
+    padding: 20px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #D8BFD8, #E6E6FA);
+    color: #2c2c2c;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Cards */
 .card {
     background-color: white;
     padding: 20px;
@@ -39,25 +73,6 @@ h1 {
     box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
 }
 
-/* Result Box */
-.result-box {
-    padding: 20px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
-    color: black;
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* Button */
-.stButton>button {
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 16px;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -156,7 +171,7 @@ if st.button("🚀 Analyze"):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- CHART CARDS ----------------
+# ---------------- CHARTS ----------------
 col1, col2 = st.columns(2)
 
 with col1:
