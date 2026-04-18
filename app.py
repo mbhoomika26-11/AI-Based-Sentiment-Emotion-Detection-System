@@ -9,28 +9,54 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
 # ---------------- PAGE CONFIG ----------------
-st.set_page_config(page_title="Sentiment Analyzer", page_icon="🧠", layout="wide")
+st.set_page_config(
+    page_title="Sentiment Analyzer",
+    page_icon="🧠",
+    layout="wide"
+)
 
-# ---------------- CUSTOM CSS ----------------
+# ---------------- LIGHT THEME CSS ----------------
 st.markdown("""
 <style>
-.main {
-    background-color: #0E1117;
+body {
+    background-color: #f5f7fa;
 }
+.main {
+    background-color: #f5f7fa;
+}
+
+/* Title */
 h1 {
     text-align: center;
-    color: #FFFFFF;
+    color: #2c3e50;
 }
-.result-box {
+
+/* Card Style */
+.card {
+    background-color: white;
     padding: 20px;
     border-radius: 15px;
-    background: linear-gradient(135deg, #1f4037, #99f2c8);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Result Box */
+.result-box {
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
     color: black;
     font-size: 20px;
     font-weight: bold;
+    text-align: center;
 }
-textarea {
-    border-radius: 10px !important;
+
+/* Button */
+.stButton>button {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -106,11 +132,12 @@ def train_model():
 
 tfidf, emotion_model, sentiment_model = train_model()
 
-# ---------------- INPUT SECTION ----------------
+# ---------------- INPUT CARD ----------------
+st.markdown('<div class="card">', unsafe_allow_html=True)
+
 st.subheader("💬 Enter your text")
 user_input = st.text_area("Type something...", height=150)
 
-# ---------------- BUTTON ----------------
 if st.button("🚀 Analyze"):
     clean = clean_text(user_input)
     vec = tfidf.transform([clean])
@@ -120,7 +147,6 @@ if st.button("🚀 Analyze"):
 
     emotion_name = mapping[emotion_pred]
 
-    # ---------------- RESULT DISPLAY ----------------
     st.markdown(f"""
     <div class="result-box">
         🎯 Emotion: {emotion_name} <br><br>
@@ -128,17 +154,23 @@ if st.button("🚀 Analyze"):
     </div>
     """, unsafe_allow_html=True)
 
-# ---------------- CHARTS ----------------
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------- CHART CARDS ----------------
 col1, col2 = st.columns(2)
 
 with col1:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("📊 Emotion Distribution")
     fig, ax = plt.subplots()
     train_df["label"].value_counts().plot(kind="bar", ax=ax)
     st.pyplot(fig)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("📊 Sentiment Distribution")
     fig2, ax2 = plt.subplots()
     train_df["sentiment"].value_counts().plot(kind="bar", ax=ax2)
     st.pyplot(fig2)
+    st.markdown('</div>', unsafe_allow_html=True)
